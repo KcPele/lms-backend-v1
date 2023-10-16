@@ -90,7 +90,12 @@ export const getSingleCourse = CatchAsyncError(
         if (!course) {
           return next(new ErrorHandler("Course not found", 404));
         }
-        await redis.set(courseId as string, JSON.stringify(course));
+        await redis.set(
+          courseId as string,
+          JSON.stringify(course),
+          "EX",
+          604800
+        ); //7 days expires
         console.log("from db");
 
         res.status(200).json({
@@ -396,7 +401,6 @@ export const getAllCourses = CatchAsyncError(
   }
 );
 
-
 //Delete course -- only admin
 export const deleteCourse = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -418,4 +422,3 @@ export const deleteCourse = CatchAsyncError(
     }
   }
 );
-

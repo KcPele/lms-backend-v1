@@ -199,7 +199,9 @@ export const updateAccessToken = CatchAsyncError(
       }
       const seasion = await redis.get(decoded?.id as string);
       if (!seasion) {
-        return next(new ErrorHandler(message, 401));
+        return next(
+          new ErrorHandler("Please login to access this resources", 401)
+        );
       }
       const user = JSON.parse(seasion) as IUser;
       const accessToken = jwt.sign(
@@ -219,6 +221,7 @@ export const updateAccessToken = CatchAsyncError(
       req.user = user;
       res.cookie("access_token", accessToken, accessTokenOptions);
       res.cookie("refresh_token", refreshToken, refreshTokenOptions);
+      await redis.set(user._id, JSON.stringify(user), "EX", 604800);
       res.status(200).json({
         success: true,
         access_token: accessToken,
